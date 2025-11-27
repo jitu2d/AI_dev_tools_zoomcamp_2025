@@ -1,0 +1,39 @@
+{% extends 'todos/base.html' %}
+
+{% block content %}
+<h1>{{ action }} Task</h1>
+<p class="subtitle">{% if action == 'Create' %}Add a new task to your list{% else %}Update your task details{% endif %}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="title">Task Title *</label>
+        <input type="text" id="title" name="title" value="{{ task.title|default:'' }}" required
+               placeholder="What needs to be done?">
+    </div>
+    
+    <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="4"
+                  placeholder="Add more details about this task...">{{ task.description|default:'' }}</textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="due_date">Due Date</label>
+        <input type="datetime-local" id="due_date" name="due_date" 
+               value="{% if task.due_date %}{{ task.due_date|date:'Y-m-d\TH:i' }}{% endif %}">
+    </div>
+    
+    <div class="form-group">
+        <label for="reminder_date">🔔 Reminder Date</label>
+        <input type="datetime-local" id="reminder_date" name="reminder_date" 
+               value="{% if task.reminder_date %}{{ task.reminder_date|date:'Y-m-d\TH:i' }}{% endif %}">
+        <small style="display: block; margin-top: 6px; color: #64748b; font-size: 13px;">Get notified about this task</small>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">{{ action }} Task</button>
+        <a href="{% url 'task_list' %}" class="btn">Cancel</a>
+    </div>
+</form>
+{% endblock %}

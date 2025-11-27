@@ -1,0 +1,216 @@
+{% extends 'todos/base.html' %}
+{% load calendar_filters %}
+
+{% block content %}
+<h1>📅 Calendar View</h1>
+<p class="subtitle">View your tasks in a monthly calendar format</p>
+
+<div class="header-actions">
+    <a href="{% url 'task_list' %}" class="btn btn-secondary">📋 List View</a>
+    <a href="{% url 'task_create' %}" class="btn">➕ Add New Task</a>
+</div>
+
+<div class="calendar-container">
+    <div class="calendar-header">
+        <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-small">‹ Previous</a>
+        <h2>{{ month_name }} {{ year }}</h2>
+        <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-small">Next ›</a>
+    </div>
+    
+    <div class="calendar-grid">
+        <!-- Day headers -->
+        <div class="calendar-day-header">Sun</div>
+        <div class="calendar-day-header">Mon</div>
+        <div class="calendar-day-header">Tue</div>
+        <div class="calendar-day-header">Wed</div>
+        <div class="calendar-day-header">Thu</div>
+        <div class="calendar-day-header">Fri</div>
+        <div class="calendar-day-header">Sat</div>
+        
+        <!-- Calendar days -->
+        {% for week in calendar %}
+            {% for day in week %}
+                {% if day == 0 %}
+                    <div class="calendar-day empty"></div>
+                {% else %}
+                    {% with year=year month=month day=day %}
+                        {% load tz %}
+                        {% now "Y-m-d" as today_str %}
+                        {% if year|stringformat:"04d" == today_str|slice:":4" and month|stringformat:"02d" == today_str|slice:"5:7" and day|stringformat:"02d" == today_str|slice:"8:10" %}
+                            <div class="calendar-day today">
+                        {% else %}
+                            <div class="calendar-day">
+                        {% endif %}
+                    {% endwith %}
+                        <div class="day-number">{{ day }}</div>
+                        {% with day_str=day|stringformat:"d" %}
+                            {% if day_str in tasks_by_day_str %}
+                                <div class="day-tasks">
+                                    {% for task in tasks_by_day_str|lookup:day_str %}
+                                        <div class="calendar-task {% if task.is_resolved %}resolved{% endif %}" title="{{ task.title }}">
+                                            <a href="{% url 'task_edit' task.id %}">
+                                                {% if task.is_resolved %}✓{% endif %}
+                                                {{ task.title|truncatechars:15 }}
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .calendar-container {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .calendar-header h2 {
+        margin: 0;
+        font-size: 1.4rem;
+        color: #1e293b;
+        font-weight: 600;
+    }
+    
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .calendar-day-header {
+        text-align: center;
+        font-weight: 600;
+        padding: 12px 0;
+        background-color: #f1f5f9;
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+    
+    .calendar-day {
+        min-height: 100px;
+        padding: 8px;
+        background: white;
+        border-right: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f1f5f9;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+    
+    .calendar-day:nth-child(7n) {
+        border-right: none;
+    }
+    
+    .calendar-day:hover:not(.empty) {
+        background-color: #f8fafc;
+    }
+    
+    .calendar-day.empty {
+        background: #f8fafc;
+    }
+    
+    .calendar-day.today {
+        background: #dbeafe;
+    }
+    
+    .calendar-day.today .day-number {
+        background: #3b82f6;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    
+    .day-number {
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+    
+    .day-tasks {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .calendar-task {
+        background: #667eea;
+        color: white;
+        padding: 4px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .calendar-task a {
+        color: white;
+        text-decoration: none;
+        display: block;
+        width: 100%;
+    }
+    
+    .calendar-task.resolved {
+        background: #22c55e;
+        opacity: 0.8;
+        text-decoration: line-through;
+    }
+    
+    .calendar-task:hover {
+        opacity: 0.9;
+    }
+    
+    @media (max-width: 768px) {
+        .calendar-container {
+            padding: 15px;
+        }
+        
+        .calendar-day {
+            min-height: 80px;
+            padding: 6px;
+        }
+        
+        .day-number {
+            font-size: 0.8rem;
+        }
+        
+        .calendar-task {
+            font-size: 0.6rem;
+            padding: 3px 5px;
+        }
+    }
+</style>
+
+<!-- Template filter for dictionary access -->
+{% load static %}
+<script>
+// Custom template filter would be here, but we'll handle it in the view
+</script>
+{% endblock %}

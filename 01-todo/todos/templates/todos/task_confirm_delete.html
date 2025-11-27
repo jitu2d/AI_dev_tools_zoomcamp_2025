@@ -1,0 +1,22 @@
+{% extends 'todos/base.html' %}
+
+{% block content %}
+<h1>Delete Task</h1>
+<p class="subtitle">Are you sure you want to delete this task?</p>
+
+<div class="alert">
+    <p>This action cannot be undone. The following task will be permanently deleted:</p>
+    <div class="alert-content">
+        <strong>{{ task.title }}</strong>
+        {% if task.description %}
+            <p>{{ task.description }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<form method="post" style="display: inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Delete Task</button>
+    <a href="{% url 'task_list' %}" class="btn">Cancel</a>
+</form>
+{% endblock %}

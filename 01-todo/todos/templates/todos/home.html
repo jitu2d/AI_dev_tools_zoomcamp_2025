@@ -1,0 +1,227 @@
+{% extends 'todos/base.html' %}
+{% load calendar_filters %}
+
+{% block content %}
+<h1>✨ My Tasks</h1>
+<p class="subtitle">Welcome back! You have {{ active_tasks }} active task{{ active_tasks|pluralize }} to complete.</p>
+
+<div class="header-actions">
+    <a href="{% url 'task_create' %}" class="btn">➕ Add New Task</a>
+    <a href="{% url 'calendar_view' %}" class="btn btn-secondary">📅 Calendar View</a>
+</div>
+
+{# Status Dashboard #}
+<div class="status-dashboard">
+    <div class="stat-card stat-total">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+            <div class="stat-value">{{ total_tasks }}</div>
+            <div class="stat-label">Total Tasks</div>
+        </div>
+    </div>
+    <div class="stat-card stat-active">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-info">
+            <div class="stat-value">{{ active_tasks }}</div>
+            <div class="stat-label">Active</div>
+        </div>
+    </div>
+    <div class="stat-card stat-completed">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+            <div class="stat-value">{{ completed_tasks|length }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+    </div>
+    <div class="stat-card stat-overdue">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-info">
+            <div class="stat-value">{{ overdue_tasks|length }}</div>
+            <div class="stat-label">Overdue</div>
+        </div>
+    </div>
+</div>
+
+{# Overdue Tasks #}
+{% if overdue_tasks %}
+<div class="category-section">
+    <h2 class="category-title overdue">⚠️ Overdue ({{ overdue_tasks|length }})</h2>
+    <ul class="task-list">
+        {% for task in overdue_tasks %}
+        <li class="task-item task-overdue">
+            <div class="task-content">
+                <div class="task-title">{{ task.title }}</div>
+                {% if task.description %}
+                <div class="task-description">{{ task.description }}</div>
+                {% endif %}
+                <div class="task-meta">
+                    <span>🕒 Created: {{ task.created_at|date:"M d, Y" }}</span>
+                    {% if task.due_date %}
+                        <span class="task-due">⏰ Due: {{ task.due_date|date:"M d, Y H:i" }}</span>
+                    {% endif %}
+                    {% if task.reminder_date %}
+                        <span class="task-reminder">🔔 Reminder: {{ task.reminder_date|date:"M d, Y H:i" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="task-actions">
+                <form action="{% url 'task_toggle_resolve' task.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-small">Mark Done</button>
+                </form>
+                <a href="{% url 'task_edit' task.id %}" class="btn btn-small">✏️ Edit</a>
+                <a href="{% url 'task_delete' task.id %}" class="btn btn-small btn-danger">🗑️ Delete</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{# Today's Tasks #}
+{% if today_tasks %}
+<div class="category-section">
+    <h2 class="category-title today">📅 Today ({{ today_tasks|length }})</h2>
+    <ul class="task-list">
+        {% for task in today_tasks %}
+        <li class="task-item">
+            <div class="task-content">
+                <div class="task-title">{{ task.title }}</div>
+                {% if task.description %}
+                <div class="task-description">{{ task.description }}</div>
+                {% endif %}
+                <div class="task-meta">
+                    <span>🕒 Created: {{ task.created_at|date:"M d, Y" }}</span>
+                    {% if task.due_date %}
+                        <span class="task-due">⏰ Due: {{ task.due_date|date:"M d, Y H:i" }}</span>
+                    {% endif %}
+                    {% if task.reminder_date %}
+                        <span class="task-reminder">🔔 Reminder: {{ task.reminder_date|date:"M d, Y H:i" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="task-actions">
+                <form action="{% url 'task_toggle_resolve' task.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-small">Mark Done</button>
+                </form>
+                <a href="{% url 'task_edit' task.id %}" class="btn btn-small">✏️ Edit</a>
+                <a href="{% url 'task_delete' task.id %}" class="btn btn-small btn-danger">🗑️ Delete</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{# Upcoming Tasks #}
+{% if upcoming_tasks %}
+<div class="category-section">
+    <h2 class="category-title upcoming">🗓️ Upcoming ({{ upcoming_tasks|length }})</h2>
+    <ul class="task-list">
+        {% for task in upcoming_tasks %}
+        <li class="task-item">
+            <div class="task-content">
+                <div class="task-title">{{ task.title }}</div>
+                {% if task.description %}
+                <div class="task-description">{{ task.description }}</div>
+                {% endif %}
+                <div class="task-meta">
+                    <span>🕒 Created: {{ task.created_at|date:"M d, Y" }}</span>
+                    {% if task.due_date %}
+                        <span class="task-due">⏰ Due: {{ task.due_date|date:"M d, Y H:i" }}</span>
+                    {% endif %}
+                    {% if task.reminder_date %}
+                        <span class="task-reminder">🔔 Reminder: {{ task.reminder_date|date:"M d, Y H:i" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="task-actions">
+                <form action="{% url 'task_toggle_resolve' task.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-small">Mark Done</button>
+                </form>
+                <a href="{% url 'task_edit' task.id %}" class="btn btn-small">✏️ Edit</a>
+                <a href="{% url 'task_delete' task.id %}" class="btn btn-small btn-danger">🗑️ Delete</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{# Tasks without due date #}
+{% if no_due_date_tasks %}
+<div class="category-section">
+    <h2 class="category-title no-date">📋 No Due Date ({{ no_due_date_tasks|length }})</h2>
+    <ul class="task-list">
+        {% for task in no_due_date_tasks %}
+        <li class="task-item">
+            <div class="task-content">
+                <div class="task-title">{{ task.title }}</div>
+                {% if task.description %}
+                <div class="task-description">{{ task.description }}</div>
+                {% endif %}
+                <div class="task-meta">
+                    <span>🕒 Created: {{ task.created_at|date:"M d, Y" }}</span>
+                    {% if task.reminder_date %}
+                        <span class="task-reminder">🔔 Reminder: {{ task.reminder_date|date:"M d, Y H:i" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="task-actions">
+                <form action="{% url 'task_toggle_resolve' task.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-small">Mark Done</button>
+                </form>
+                <a href="{% url 'task_edit' task.id %}" class="btn btn-small">✏️ Edit</a>
+                <a href="{% url 'task_delete' task.id %}" class="btn btn-small btn-danger">🗑️ Delete</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{# Completed Tasks #}
+{% if completed_tasks %}
+<div class="category-section">
+    <h2 class="category-title completed">✓ Completed ({{ completed_tasks|length }})</h2>
+    <ul class="task-list">
+        {% for task in completed_tasks %}
+        <li class="task-item resolved">
+            <div class="task-content">
+                <div class="task-title">✓ {{ task.title }}</div>
+                {% if task.description %}
+                <div class="task-description">{{ task.description }}</div>
+                {% endif %}
+                <div class="task-meta">
+                    <span>🕒 Created: {{ task.created_at|date:"M d, Y" }}</span>
+                    {% if task.due_date %}
+                        <span class="task-due">⏰ Due: {{ task.due_date|date:"M d, Y H:i" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="task-actions">
+                <form action="{% url 'task_toggle_resolve' task.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-small btn-success">✓ Done</button>
+                </form>
+                <a href="{% url 'task_edit' task.id %}" class="btn btn-small">✏️ Edit</a>
+                <a href="{% url 'task_delete' task.id %}" class="btn btn-small btn-danger">🗑️ Delete</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if not overdue_tasks and not today_tasks and not upcoming_tasks and not no_due_date_tasks and not completed_tasks %}
+<div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h2>No tasks yet!</h2>
+    <p>Get started by creating your first task.</p>
+    <a href="{% url 'task_create' %}" class="btn" style="margin-top: 20px;">➕ Add New Task</a>
+</div>
+{% endif %}
+{% endblock %}
